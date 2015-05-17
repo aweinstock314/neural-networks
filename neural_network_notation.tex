@@ -1,0 +1,9 @@
+\documentclass[10pt]{article}
+\usepackage{tikz}
+\usepackage{amsmath}
+\begin{document}
+\begin{tikzpicture}
+\immediate\write18{/usr/bin/env runhaskell emit_neuralnet_tikzcode.hs > neuralnet_tikzcode.txt}
+\input{neuralnet_tikzcode.txt}
+\end{tikzpicture}
+\end{document}
