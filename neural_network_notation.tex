@@ -24,10 +24,31 @@ $f(\vec{x}) = \text{The function that the neural network approximates}$\\
 $\tilde{f}(\vec{x}) = \text{The output of the neural network} = \vec{x}^{(\ell_{n})}$\\
 $\tilde{f} = \bigcirc_{k=0}^{n-1}g_k$, where $\bigcirc$ represents iterated function composition.\\
 $E(\vec{x}) = \frac{1}{2}\norm{f(\vec{x}) - \tilde{f}(\vec{x})}^2$\\
+
+\noindent
 $\frac{\partial E}{\partial W^{(\ell_{n-1})}}(\vec{x}) = \norm{f(\vec{x}) - \tilde{f}(\vec{x})}$\\
+
+\noindent
 $\frac{\partial E}{\partial W_{ij}^{(\ell_k)}} =
-    \frac{\partial E}{\partial g_k(\vec{x}^{(\ell_k)})}
-    \frac{\partial g_k(\vec{x}^{(\ell_k)})}{\partial \vec{x}^{(\ell_k)}}
-    \frac{\partial \vec{x}^{(\ell_k)}}{\partial W_{ij}^{(\ell_k)}}$\\
+    \frac{\partial E}{\partial \theta(W^{(\ell_k)T}\vec{x}^{(\ell_k)})_j}
+    \frac{\partial \theta(W^{(\ell_k)T}\vec{x}^{(\ell_k)})_j}{\partial (W^{(\ell_k)T}\vec{x}^{(\ell_k)})_j}
+    \frac{\partial (W^{(\ell_k)T}\vec{x}^{(\ell_k)})_j}{\partial W_{ij}^{(\ell_k)}}$\\
+
+\noindent
+$\frac{\partial E}{\partial \theta(W^{(\ell_k)T}\vec{x}^{(\ell_k)})_j} =
+    \Sigma_{h=0}^{d_{k+1}}\left(
+        \frac{\partial E}{\partial\theta(W^{(\ell_{k+1})T}\vec{x}^{(\ell_{k+1})})_h}
+        \frac{\partial\theta(W^{(\ell_{k+1})T}\vec{x}^{(\ell_{k+1})})_h}{\partial(W^{(\ell_k)T}\vec{x}^{(\ell_k)})_h}
+        W_{jh}^{(\ell_{k+1})}
+    \right)
+$\\
+
+\noindent
+$\frac{\partial \theta(W^{(\ell_k)T}\vec{x}^{(\ell_k)})_j}{\partial (W^{(\ell_k)T}\vec{x}^{(\ell_k)})_j} =
+    \theta'(W^{(\ell_k)T}\vec{x}^{(\ell_k)})$\\
+
+\noindent
+$\frac{\partial (W^{(\ell_k)T}\vec{x}^{(\ell_k)})_j}{\partial W_{ij}^{(\ell_k)}} =
+    \frac\partial{\partial W_{ij}^{(\ell_k)}}\Sigma_{h=0}^{d_k}W_{hj}^{(\ell_k)}x_h^{(\ell_k)} = x_i^{(\ell_k)}$\\
 
 \end{document}
