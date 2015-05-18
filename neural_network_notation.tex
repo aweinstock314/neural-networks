@@ -1,9 +1,20 @@
 \documentclass[10pt]{article}
-\usepackage{tikz}
 \usepackage{amsmath}
+\usepackage{tikz}
+\usepackage[margin=1in,footskip=0.25in]{geometry}
+\newcommand\vectorliteral[1]{\left<{#1}\right>}
+%\newcommand\columnvector[1]{\left[{#1}\right]^T}
 \begin{document}
 \begin{tikzpicture}
 \immediate\write18{/usr/bin/env runhaskell emit_neuralnet_tikzcode.hs > neuralnet_tikzcode.txt}
 \input{neuralnet_tikzcode.txt}
-\end{tikzpicture}
+\end{tikzpicture}\\
+
+\noindent
+$\ell_n$ is the $n^\text{th}$ layer of the network.\\
+$\vec{x}^{(\ell_n)}$ is the vector of inputs at layer $n$, the $0^{th}$ entry of which is always $1$ (for the bias/intercept).\\
+$\text{dim}(\vec{x}^{(\ell_n)}) = d_n$. In the depicted network, $\vec{d} = \vectorliteral{6, 7, 5, 1}$.\\
+$W^{(\ell_n)}$ is the weight matrix connecting $\ell_n$ to $\ell_{n+1}$.\\
+$\vec{x}^{(\ell_{n+1})} = \vectorliteral{1 | \theta(W^{(\ell_n)}\vec{x}^{(\ell_n)})}$, where $|$ denotes vector concatenation, and $\theta$ is the network's activation function (e.g. $\theta = \text{tanh}$).\\
+$\text{dim}(W^{(\ell_n)}) = (d_{n+1}-1) \times d_n$
 \end{document}
