@@ -22,9 +22,9 @@ instance (Element a, Show a) => Show (NeuralNetwork a) where
 
 -- (forwardPropagate nn x) returns the values at all the intermediate layers
 forwardPropagate :: Numeric a => NeuralNetwork a -> Vector a -> [Vector a]
-forwardPropagate (NeuralNetwork mats (ActivationFunction theta _)) x = scanl ((V.map theta .) . flip app) x mats
+forwardPropagate (NeuralNetwork mats (ActivationFunction theta _)) x = scanl ((V.map theta .) . flip app . V.cons 1) x mats
 
 makeRandomMatrix gen (m, n) range = runState (replicateM (m*n) (state (randomR range)) >>= return . matrix m) gen
 
 randomlyWeightedNetwork seed dims af = NeuralNetwork (fst . foldr step ([], mkStdGen seed) $ zip dims (tail dims)) af where
-    step (m, n) (mats, gen) = first (:mats) (makeRandomMatrix gen (m, n) (0, 1))
+    step (m, n) (mats, gen) = first (:mats) (makeRandomMatrix gen (m+1, n) (0, 1))
