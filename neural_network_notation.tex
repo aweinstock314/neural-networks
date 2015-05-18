@@ -2,6 +2,7 @@
 \usepackage{amsmath}
 \usepackage{tikz}
 \usepackage[margin=1in,footskip=0.25in]{geometry}
+\newcommand\norm[1]{{||}{#1}{||}}
 \newcommand\vectorliteral[1]{\left<{#1}\right>}
 %\newcommand\columnvector[1]{\left[{#1}\right]^T}
 \begin{document}
@@ -11,10 +12,22 @@
 \end{tikzpicture}\\
 
 \noindent
-$\ell_n$ is the $n^\text{th}$ layer of the network.\\
-$\vec{x}^{(\ell_n)}$ is the vector of inputs at layer $n$, the $0^{th}$ entry of which is always $1$ (for the bias/intercept).\\
-$\text{dim}(\vec{x}^{(\ell_n)}) = d_n$. In the depicted network, $\vec{d} = \vectorliteral{6, 7, 5, 1}$.\\
-$W^{(\ell_n)}$ is the weight matrix connecting $\ell_n$ to $\ell_{n+1}$.\\
-$\vec{x}^{(\ell_{n+1})} = \vectorliteral{1 | \theta(W^{(\ell_n)}\vec{x}^{(\ell_n)})}$, where $|$ denotes vector concatenation, and $\theta$ is the network's activation function (e.g. $\theta = \text{tanh}$).\\
-$\text{dim}(W^{(\ell_n)}) = (d_{n+1}-1) \times d_n$
+$\ell_k$ is the $k^\text{th}$ layer of the network. There are $n+1$ total layers. ($n=3$ in the depicted network)\\
+$\vec{x}^{(\ell_k)}$ is the vector of inputs at layer $k$, the $0^{th}$ entry of which is always $1$ (for the bias/intercept).\\
+$\text{dim}(\vec{x}^{(\ell_k)}) = d_k$. In the depicted network, $\vec{d} = \vectorliteral{6, 7, 5, 2}$.\\
+$W^{(\ell_k)}$ is the weight matrix connecting $\ell_k$ to $\ell_{k+1}$.\\
+$g_k = \lambda \vec{x}. \vectorliteral{1 | \theta(W^{(\ell_k)T}\vec{x})} = \text{Propagation function at layer $k$}$\\
+$|$ denotes vector concatenation, and $\theta$ is the network's activation function (e.g. $\theta = \text{tanh}$).\\
+$\vec{x}^{(\ell_{k+1})} = g_k(\vec{x}^{(\ell_k)}) = \vectorliteral{1 | \theta(W^{(\ell_k)T}\vec{x}^{(\ell_k)})}$\\
+$\text{dim}(W^{(\ell_k)}) = d_k \times (d_{k+1}-1)$\\
+$f(\vec{x}) = \text{The function that the neural network approximates}$\\
+$\tilde{f}(\vec{x}) = \text{The output of the neural network} = \vec{x}^{(\ell_{n})}$\\
+$\tilde{f} = \bigcirc_{k=0}^{n-1}g_k$, where $\bigcirc$ represents iterated function composition.\\
+$E(\vec{x}) = \frac{1}{2}\norm{f(\vec{x}) - \tilde{f}(\vec{x})}^2$\\
+$\frac{\partial E}{\partial W^{(\ell_{n-1})}}(\vec{x}) = \norm{f(\vec{x}) - \tilde{f}(\vec{x})}$\\
+$\frac{\partial E}{\partial W_{ij}^{(\ell_k)}} =
+    \frac{\partial E}{\partial g_k(\vec{x}^{(\ell_k)})}
+    \frac{\partial g_k(\vec{x}^{(\ell_k)})}{\partial \vec{x}^{(\ell_k)}}
+    \frac{\partial \vec{x}^{(\ell_k)}}{\partial W_{ij}^{(\ell_k)}}$\\
+
 \end{document}

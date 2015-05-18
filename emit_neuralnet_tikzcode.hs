@@ -27,5 +27,7 @@ main = do
     forM_ nn_ys $ \y -> emit_nn_layer y
     mapM_ emit_connections $ adjacents nn_ys
     forM_ ((-1):(nn_xs 2)) $ \x -> [sP|\\draw [->] (%d, 4+%f) -- (4, 6-%f);|] (2*x) node_size node_size
-    [sP|\\draw (4, 6) circle (%f) node{$x_0^{(\\ell_3)}$};|] node_size
+    emit_bias_node 3
+    [sP|\\draw (4, 6) circle (%f) node{$x_1^{(\\ell_3)}$};|] node_size
     forM_ (3:nn_ys) $ \y -> [sP|\\draw (12, %d) node {$\\ell_{%d}$};|] (2*y) y
+    forM_ nn_ys $ \y -> [sP|\\draw (11, %d) node {$W^{\\ell_{%d}}$};|] (2*y+1) y
