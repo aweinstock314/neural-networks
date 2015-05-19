@@ -1,4 +1,4 @@
-{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE FlexibleContexts, NoMonomorphismRestriction #-}
 module NeuralNetwork where
 import Control.Monad
 import Control.Monad.Trans.State.Lazy
@@ -22,7 +22,17 @@ data NeuralNetwork a = NN {
 
 -- (forwardPropagate nn x) returns the values at all the intermediate layers
 forwardPropagate :: Numeric a => NeuralNetwork a -> Vector a -> [Vector a]
-forwardPropagate (NN mats (AF theta _ _)) x = scanl ((V.map theta .) . flip app . V.cons 1) x mats
+forwardPropagate (NN mats (AF theta _ _)) x = scanl ((cmap theta .) . flip app . V.cons 1) x mats
+
+-- (backPropagate nn x y) returns all the errors (in the same shape as the weights) of applying nn to x, with target value y
+backPropagate :: (Num (Vector a), Numeric a) => NeuralNetwork a -> Vector a -> Vector a -> [Matrix a]
+backPropagate nn@(NN mats (AF _ theta' _)) x y = errors where
+    deltaStep (acc, prev) (v, w) = let d = V.tail $ (cmap theta' $ V.cons 1 v) * (app (tr w) prev) in (d:acc, d)
+    v : vs = reverse $ forwardPropagate nn x
+    ws = reverse mats
+    lastDelta = (cmap theta' v) * (y - v)
+    deltas = fst $ foldl deltaStep ([], lastDelta) (zip vs ws)
+    errors = reverse $ zipWith outer (v:vs) deltas
 
 initializeMatrix mkEntry (m, n) = runState (replicateM (m*n) (state mkEntry) <#> matrix m)
 
