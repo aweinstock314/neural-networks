@@ -8,7 +8,6 @@ import qualified Data.Vector.Storable as V
 
 (<#>) = flip fmap
 
-
 -- ActivationFunction wraps a function with its derivative, along with a name (for printing)
 data ActivationFunction a = AF (a -> a) (a -> a) String
 instance Show (ActivationFunction a) where show (AF _ _ n) = "ActivationFunction " ++ n
@@ -26,13 +25,20 @@ forwardPropagate (NN mats (AF theta _ _)) x = scanl ((cmap theta .) . flip app .
 
 -- (backPropagate nn x y) returns all the errors (in the same shape as the weights) of applying nn to x, with target value y
 backPropagate :: (Num (Vector a), Numeric a) => NeuralNetwork a -> Vector a -> Vector a -> [Matrix a]
-backPropagate nn@(NN mats (AF _ theta' _)) x y = errors where
-    deltaStep (acc, prev) (v, w) = let d = V.tail $ (cmap theta' $ V.cons 1 v) * (app (tr w) prev) in (d:acc, d)
+backPropagate nn@(NN mats (AF _ theta' _)) x y = gradient where
+    deltaStep (acc, prev) (v, w) = let d = (cmap theta' $ V.cons 1 v) * (app (tr w) prev) in (d:acc, V.tail $ d)
     v : vs = reverse $ forwardPropagate nn x
     ws = reverse mats
     lastDelta = (cmap theta' v) * (y - v)
-    deltas = fst $ foldl deltaStep ([], lastDelta) (zip vs ws)
-    errors = reverse $ zipWith outer (v:vs) deltas
+    deltas = reverse . fst $ foldl deltaStep ([], lastDelta) (zip vs ws)
+    gradient = reverse $ zipWith outer (v:vs) deltas
+
+stochasticGradientDescent dataset alpha nn = flip execState nn . forM_ dataset $ \(x,y) -> do
+    curNN@(NN curWeights _) <- get
+    let gradient = backPropagate curNN x y
+    let step = map (*scalar alpha) gradient
+    let newWeights = zipWith (+) curWeights step
+    put $ curNN {getWeightMatrices = newWeights}
 
 initializeMatrix mkEntry (m, n) = runState (replicateM (m*n) (state mkEntry) <#> matrix m)
 
