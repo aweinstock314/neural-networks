@@ -33,12 +33,12 @@ backPropagate nn@(NN mats (AF _ theta' _)) x y = gradient where
     deltas = reverse . fst $ foldl deltaStep ([], lastDelta) (zip vs ws)
     gradient = reverse $ zipWith outer (v:vs) deltas
 
-stochasticGradientDescent dataset alpha nn = flip execState nn . forM_ dataset $ \(x,y) -> do
-    curNN@(NN curWeights _) <- get
-    let gradient = backPropagate curNN x y
-    let step = map (*scalar alpha) gradient
-    let newWeights = zipWith (+) curWeights step
-    put $ curNN {getWeightMatrices = newWeights}
+stochasticGradientDescent dataset alpha nn = foldl update nn dataset where
+    update nn@(NN oldWeights _) (x, y) = let
+        gradient = backPropagate nn x y
+        step = map (*scalar alpha) gradient
+        newWeights = zipWith (+) oldWeights step
+        in nn {getWeightMatrices = newWeights}
 
 initializeMatrix mkEntry (m, n) = runState (replicateM (m*n) (state mkEntry) <#> matrix m)
 
