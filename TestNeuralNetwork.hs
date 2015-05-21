@@ -2,15 +2,18 @@
 import NeuralNetwork
 import Numeric.LinearAlgebra.HMatrix
 
-xorDataSet = zip xs ys where
-    xs = [vector [0, 0],
-          vector [0, 1],
-          vector [1, 0],
-          vector [1, 1]]
-    ys = map (vector . (:[])) [0, 1, 1, 0]
+xs = [vector [0, 0],
+      vector [0, 1],
+      vector [1, 0],
+      vector [1, 1]]
+ys = map (vector . (:[])) [0, 1, 1, 0]
 
-initialNN = randomlyWeightedNetwork 0 [2, 2, 1] tanhActivation
+xorDataSet = zip xs ys
 
-nns = iterate (stochasticGradientDescent xorDataSet 0.2) initialNN
+initialNN = randomlyWeightedNetwork 0 [2, 3, 1] logisticAF
 
-outputs x = map (last . flip forwardPropagate (vector x)) nns
+nns = iterate (stochasticGradientDescent xorDataSet 0.02) initialNN
+
+outputs = map (\nn -> map (applyNN nn) xs) nns
+
+errors = map (map norm_2 . zipWith (-) ys) outputs
