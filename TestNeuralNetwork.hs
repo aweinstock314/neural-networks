@@ -1,24 +1,37 @@
-{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE NoMonomorphismRestriction, QuasiQuotes #-}
+import Control.Arrow
+import Control.Monad
 import NeuralNetwork
 import Numeric.LinearAlgebra.HMatrix
+import Text.Printf.TH
 import VisualizeFunction
 
-xs = [vector [0, 0],
-      vector [0, 1],
-      vector [1, 0],
-      vector [1, 1]]
-ys = map (vector . (:[])) [0, 1, 1, 0]
+xorDataSet = map (vector *** vector) [
+    ([-1,-1], [-1]),
+    ([-1, 1], [ 1]),
+    ([ 1,-1], [ 1]),
+    ([ 1, 1], [-1])
+    ]
 
-xorDataSet = zip xs ys
+andDataSet = map (vector *** vector) [
+    ([-1,-1], [-1]),
+    ([-1, 1], [ 1]),
+    ([ 1,-1], [ 1]),
+    ([ 1, 1], [ 1])
+    ]
 
-nn = randomlyWeightedNetwork 0 [2, 3, 1] logisticAF
+nn = randomlyWeightedNetwork 0 [2, 9, 1] tanhAF
+trainOn dataset = iterate (stochasticGradientDescent dataset 0.02) nn
 
-nns = iterate (stochasticGradientDescent xorDataSet 0.02) nn
+andNNs = trainOn andDataSet
+xorNNs = trainOn xorDataSet
 
-outputs = map (\nn -> map (applyNN nn) xs) nns
+outputs dataset nns = map (\nn -> map (applyNN nn) (map fst dataset)) nns
+andOutputs = outputs andDataSet andNNs
+xorOutputs = outputs xorDataSet xorNNs
 
-errors = map (map norm_2 . zipWith (-) ys) outputs
+image = visualizeFunctionBMP (-1,-1) (1,1) (1024,1024) (-1,1) . ((!0).) . applyNN
 
-images = map (visualizeFunctionBMP (-1,-1) (1,1) (1024,1024) (-1,1) . ((!0).) . applyNN) nns
-
-main = flip mapM_ [0,1,2,5,10,100] $ \i -> saveImage (concat ["xornet", show i, ".bmp"]) (images !! i)
+main = forM_ [0..10] $ \i -> do
+    saveImage ([s|neuralnetwork_and_%04d.bmp|] (2^i)) (image (andNNs !! (2^i)))
+    saveImage ([s|neuralnetwork_xor_%04d.bmp|] (2^i)) (image (xorNNs !! (2^i)))

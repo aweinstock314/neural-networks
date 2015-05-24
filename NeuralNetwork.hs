@@ -13,7 +13,7 @@ data ActivationFunction a = AF (a -> a) (a -> a) String
 instance Show (ActivationFunction a) where show (AF _ _ n) = "ActivationFunction " ++ n
 
 tanhAF = AF tanh (\x -> 1 - (tanh x)^2) "tanh"
-logisticAF = AF (\x -> 1 / (1 + exp (-x))) (\x -> x * (1 - x)) "logistic"
+logisticAF = AF f (\x -> f x * (1 - f x)) "logistic" where f x = (1 / (1 + exp (-x)))
 
 data NeuralNetwork a = NN {
     getWeightMatrices :: [Matrix a],
@@ -34,7 +34,7 @@ backPropagate nn@(NN mats (AF theta theta' _)) x y = gradient where
     deltaStep (ds, d) (v, w) = let d' = (cmap theta' v) * (V.tail $ app w d) in (d':ds, d')
     (v:vs, zs) = first reverse $ forwardPropagate nn x
     ws = reverse mats
-    dLast = (cmap theta' v) * (y - cmap theta v)
+    dLast = 2 * (cmap theta v - y)
     ds = fst $ foldl' deltaStep ([dLast], dLast) (zip vs ws)
     gradient = zipWith outer zs ds
 
