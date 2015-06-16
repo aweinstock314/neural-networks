@@ -38,12 +38,13 @@ backPropagate nn@(NN mats (AF theta theta' _)) x y = gradient where
     ds = fst $ foldl' deltaStep ([dLast], dLast) (zip vs ws)
     gradient = zipWith outer zs ds
 
-stochasticGradientDescent dataset alpha nn = foldl' update nn dataset where
-    update nn@(NN oldWeights _) (x, y) = let
-        gradient = backPropagate nn x y
-        step = map (*scalar alpha) gradient
-        newWeights = zipWith (-) oldWeights step
-        in nn {getWeightMatrices = newWeights}
+batchUpdate alpha nn@(NN oldWeights _) dataset = let
+    gradient = foldr (\(x, y) gr -> zipWith (+) gr (backPropagate nn x y)) (replicate (length oldWeights) (scalar 0)) dataset
+    step = map (*scalar (alpha / genericLength dataset)) gradient
+    newWeights = zipWith (-) oldWeights step
+    in nn {getWeightMatrices = newWeights}
+
+stochasticGradientDescent dataset alpha nn = foldl' (\nn' pt -> batchUpdate alpha nn' [pt]) nn dataset
 
 initializeMatrix mkEntry (m, n) = runState (fmap (matrix m) $ replicateM (m*n) (state mkEntry))
 
