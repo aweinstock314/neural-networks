@@ -39,8 +39,8 @@ backPropagate nn@(NN mats (AF theta theta' _)) x y = gradient where
     gradient = zipWith outer zs ds
 
 batchUpdate alpha nn@(NN oldWeights _) dataset = let
-    gradient = foldr (\(x, y) gr -> zipWith (+) gr (backPropagate nn x y)) (replicate (length oldWeights) (scalar 0)) dataset
-    step = map (*scalar (alpha / genericLength dataset)) gradient
+    (gradient, size) = foldr (\(x, y) (gr, n) -> (zipWith (+) gr (backPropagate nn x y), n+1)) (cycle [scalar 0], 0) dataset
+    step = map (*scalar (alpha / size)) gradient
     newWeights = zipWith (-) oldWeights step
     in nn {getWeightMatrices = newWeights}
 
